@@ -25,8 +25,9 @@ readonly IBMI_PRIVATE_IP="192.168.0.109"
 # ===========================================================
 # SSH Keys (injected as env vars from Code Engine secrets)
 # ===========================================================
-readonly VSI_SSH_KEY="${VSI_SSH_MM}"
-readonly IBMI_SSH_KEY="${IBMI_SSH_MM}"
+readonly VSI_SSH_KEY="${vsi_ssh_mm}"
+readonly IBMI_SSH_KEY="${ibmi_ssh_mm}"
+
 
 VSI_KEY_FILE="$(mktemp)"
 IBMI_KEY_FILE="$(mktemp)"
