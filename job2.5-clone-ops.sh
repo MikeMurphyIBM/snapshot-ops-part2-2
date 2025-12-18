@@ -48,12 +48,14 @@ chmod 600 "$VSI_KEY_FILE" "$IBMI_KEY_FILE"
 SSH_OPTS=(
   -o BatchMode=yes
   -o StrictHostKeyChecking=no
-  -o UserKnownHostsFile=/tmp/known_hosts
+  -o UserKnownHostsFile=/dev/null
+  -o GlobalKnownHostsFile=/dev/null
   -o ConnectTimeout=15
   -o ServerAliveInterval=15
   -o ServerAliveCountMax=3
   -o KexAlgorithms=+diffie-hellman-group14-sha1
 )
+
 
 # ===========================================================
 # IBM Cloud Login
