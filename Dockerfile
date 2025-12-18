@@ -1,12 +1,18 @@
-# Use Debian so date & commands behave consistently
+# -----------------------------------------------------------
+# Base image
+# -----------------------------------------------------------
 FROM debian:stable-slim
-SHELL ["/bin/bash", "-c"]  
-ENV DEBIAN_FRONTEND=noninteractive
-ENV HOME=/root
-WORKDIR ${HOME}
+SHELL ["/bin/bash", "-c"]
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    HOME=/root \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
+
+WORKDIR /root
 
 # -----------------------------------------------------------
-# Install base dependencies & GNU coreutils + SSH tools
+# Install base dependencies
 # -----------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
@@ -15,9 +21,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     coreutils \
     moreutils \
+    tzdata \
     openssh-client \
     sshpass \
-    expect \
  && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------------------------------------
@@ -25,31 +31,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # -----------------------------------------------------------
 RUN curl -fsSL https://clis.cloud.ibm.com/install/linux | bash
 
-# Ensure IBM Cloud CLI is available
 ENV PATH="/usr/local/ibmcloud/bin:/root/.bluemix:$PATH"
 
 # -----------------------------------------------------------
-# Install required IBM Cloud plugins
+# Configure IBM Cloud CLI
 # -----------------------------------------------------------
-# Disable version check (avoids build failures)
 RUN ibmcloud config --check-version=false
 
-# Initialize plugin repository list
-RUN ibmcloud plugin repo-plugins
-
-# Install PowerVS + Code Engine plugins
+# -----------------------------------------------------------
+# Install required IBM Cloud plugins
+# (PowerVS only – Code Engine plugin not needed in a CE job)
+# -----------------------------------------------------------
 RUN ibmcloud plugin install power-iaas -f
-RUN ibmcloud plugin install code-engine -f
 
 # -----------------------------------------------------------
-# Copy script into container
+# Copy job script
 # -----------------------------------------------------------
 COPY job2.5-clone-ops.sh /job2.5-clone-ops.sh
 
-# Normalize line endings + ensure script is executable
-RUN sed -i 's/\r$//' /job2.5-clone-ops.sh && chmod +x /job2.5-clone-ops.sh
+RUN sed -i 's/\r$//' /job2.5-clone-ops.sh && \
+    chmod 750 /job2.5-clone-ops.sh
 
 # -----------------------------------------------------------
-# Run the script
+# Runtime
 # -----------------------------------------------------------
-CMD ["/job2.5-clone-ops.sh"]
+ENTRYPOINT ["/job2.5-clone-ops.sh"]
