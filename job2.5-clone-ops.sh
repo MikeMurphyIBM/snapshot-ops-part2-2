@@ -80,13 +80,18 @@ echo "✓ PowerVS workspace targeted"
 # ===========================================================
 echo "→ Running IBM i PASE command via VSI jump host..."
 
+sshpass -p "$ibmi_pw" \
 ssh \
   -i "$VSI_KEY_FILE" \
   "${SSH_OPTS[@]}" \
+  -o PreferredAuthentications=publickey,password \
+  -o PubkeyAuthentication=yes \
+  -o PasswordAuthentication=yes \
   -J "${VSI_USER}@${VSI_PUBLIC_IP}" \
   -i "$IBMI_KEY_FILE" \
   "${IBMI_USER}@${IBMI_PRIVATE_IP}" \
   'system "CALL PGM(QSYS/QAENGCHG) PARM(*ENABLECI)"'
+
 
 echo "✓ IBM i PASE command completed"
 
