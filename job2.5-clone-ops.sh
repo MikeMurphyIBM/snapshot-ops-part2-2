@@ -24,8 +24,8 @@ readonly IBMI_HOST="192.168.0.109"
 readonly IBMI_USER="murphy"
 
 # Secret paths (mounted by Code Engine)
-readonly VSI_KEY="/secrets/vsi/id_rsa"
-readonly IBMI_KEY="/secrets/ibmi/id_rsa"
+readonly VSI_KEY=/secrets/vsi-ssh/vsi-ssh-mm
+readonly IBMI_KEY=/secrets/ibmi-ssh/ibmi-ssh-mm
 readonly IBMI_PASSWORD="${IBMI_PASSWORD}"  # Will be injected as env var from secret
 
 # Create .ssh directory
