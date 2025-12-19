@@ -48,7 +48,7 @@ chmod 600 "$IBMI_KEY_FILE"
 echo "IBMi SSH key installed"
 
 # --------------------------------------------------
-# SSH to VSI, then to IBMi, run command
+# SSH to VSI, then to IBMi, run commands
 # --------------------------------------------------
 echo "=== Connecting to IBMi via VSI ==="
 
@@ -60,11 +60,13 @@ ssh -i "$VSI_KEY_FILE" \
        -o StrictHostKeyChecking=no \
        -o UserKnownHostsFile=/dev/null \
        murphy@192.168.0.109 \
-       'system \"CALL PGM(QSYS/QAENGCHG) PARM(*ENABLECI)\"'" || true
+       'system \"CALL PGM(QSYS/QAENGCHG) PARM(*ENABLECI)\" && \
+        system \"CHGASPACT ASPDEV(*SYSBAS) OPTION(*FRCWRT)\" && \
+        system \"CHGASPACT ASPDEV(*SYSBAS) OPTION(*SUSPEND) SSPTIMO(15)\"'" || true
 
-echo "IBMi command completed"
-echo "Waiting 5 seconds before volume clone..."
-sleep 5
+echo "IBMi commands completed"
+echo "Waiting 3 seconds before volume clone..."
+sleep 3
 
 # --------------------------------------------------
 # Create volume clone in PowerVS
