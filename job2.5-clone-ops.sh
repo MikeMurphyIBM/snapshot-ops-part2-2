@@ -6,14 +6,13 @@ echo "=== START JOB ==="
 # --------------------------------------------------
 # IBM Cloud authentication
 # --------------------------------------------------
-API_KEY="${IBMCLOUD_API_KEY}"
 REGION="us-south"
 RESOURCE_GROUP="Default"
 
 PVS_CRN="crn:v1:bluemix:public:power-iaas:dal10:a/db1a8b544a184fd7ac339c243684a9b7:973f4d55-9056-4848-8ed0-4592093161d2::"
 
 echo "Logging into IBM Cloud..."
-ibmcloud login --apikey "$API_KEY" -r "$REGION" >/dev/null
+ibmcloud login --apikey "$IBMCLOUD_API_KEY" -r "$REGION" >/dev/null
 echo "IBM Cloud login OK"
 
 echo "Targeting resource group..."
@@ -27,14 +26,16 @@ echo "PowerVS workspace targeted"
 # --------------------------------------------------
 # Install SSH key from Code Engine secret
 # --------------------------------------------------
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
+KEY_FILE="$HOME/.ssh/id_rsa"
 
-printf "%s\n" "$vsi_ssh" > ~/.ssh/id_rsa
-chmod 600 ~/.ssh/id_rsa
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+
+# Decode single-line base64 secret into real private key
+echo "$vsi_ssh" | base64 -d > "$KEY_FILE"
+chmod 600 "$KEY_FILE"
 
 echo "SSH key installed correctly"
-
 
 # --------------------------------------------------
 # SSH to VSI
@@ -47,4 +48,3 @@ ssh \
   "echo 'Logged into VSI successfully'"
 
 echo "=== END JOB ==="
-
