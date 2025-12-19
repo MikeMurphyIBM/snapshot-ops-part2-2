@@ -38,6 +38,25 @@ chmod 600 "$VSI_KEY_FILE"
 
 echo "SSH key written"
 
+echo "=== VALIDATING SSH PRIVATE KEY ==="
+
+ls -l "$VSI_KEY_FILE"
+
+echo "--- First line of key ---"
+head -1 "$VSI_KEY_FILE"
+
+echo "--- Last line of key ---"
+tail -1 "$VSI_KEY_FILE"
+
+echo "--- ssh-keygen validation ---"
+if ssh-keygen -y -f "$VSI_KEY_FILE" >/dev/null 2>&1; then
+  echo "✅ SSH private key is VALID"
+else
+  echo "❌ SSH private key is INVALID"
+  exit 1
+fi
+
+
 # Sanity check – fail early if key is invalid
 ssh-keygen -y -f "$VSI_KEY_FILE" >/dev/null
 echo "SSH key validated"
