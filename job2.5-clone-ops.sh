@@ -40,14 +40,17 @@ chmod 600 "$VSI_KEY_FILE" "$IBMI_KEY_FILE"
 # SSH options (two-hop safe, Code Engine safe)
 # ===========================================================
 SSH_OPTS=(
+  vv
   -o StrictHostKeyChecking=no
   -o UserKnownHostsFile=/dev/null
   -o GlobalKnownHostsFile=/dev/null
+  -o LogLevel=ERROR
   -o ConnectTimeout=15
   -o ServerAliveInterval=15
   -o ServerAliveCountMax=3
   -o KexAlgorithms=+diffie-hellman-group14-sha1
 )
+
 
 # ===========================================================
 # IBM Cloud login
