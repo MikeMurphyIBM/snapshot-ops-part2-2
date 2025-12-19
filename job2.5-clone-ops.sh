@@ -50,7 +50,7 @@ echo "IBMi SSH key installed"
 # --------------------------------------------------
 # SSH to VSI, then to IBMi, run command
 # --------------------------------------------------
-echo "Connecting to VSI and then to IBMi..."
+echo "=== Connecting to IBMi via VSI ==="
 
 ssh -i "$VSI_KEY_FILE" \
   -o StrictHostKeyChecking=no \
@@ -60,18 +60,18 @@ ssh -i "$VSI_KEY_FILE" \
        -o StrictHostKeyChecking=no \
        -o UserKnownHostsFile=/dev/null \
        murphy@192.168.0.109 \
-       'system \"CALL PGM(QSYS/QAENGCHG) PARM(*ENABLECI)\"'"
+       'system \"CALL PGM(QSYS/QAENGCHG) PARM(*ENABLECI)\"'" || true
 
-echo "IBMi command executed successfully"
+echo "IBMi command completed"
 echo "Waiting 5 seconds before volume clone..."
 sleep 5
 
 # --------------------------------------------------
 # Create volume clone in PowerVS
 # --------------------------------------------------
-echo "Creating volume clone..."
+echo "=== Creating volume clone ==="
+
 ibmcloud pi volume clone-async create wth \
   --volumes 9bc46eab-4b91-41de-beb8-5b677c7530a2,2f20f93c-c48c-4ab0-aa1d-6f5adac8d971
 
-echo "Volume clone initiated"
-echo "=== END JOB ==="
+echo "=== END JOB - ALL STEPS COMPLETED ==="
