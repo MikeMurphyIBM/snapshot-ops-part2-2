@@ -31,36 +31,23 @@ chmod 700 "$HOME/.ssh"
 # Validate the secret exists
 if [ -z "${vsi_ssh:-}" ]; then
   echo "ERROR: vsi_ssh environment variable is not set"
-  echo "Check that the secret is properly configured in Code Engine"
   exit 1
 fi
 
 echo "Installing SSH key..."
 
-# Check if the key is base64 encoded or plain text
-if echo "$vsi_ssh" | head -n 1 | grep -q "BEGIN.*PRIVATE KEY"; then
-  # It's plain text (not base64 encoded)
-  echo "Key is in plain text format"
-  echo "$vsi_ssh" > "$KEY_FILE"
-else
-  # It's base64 encoded - decode it
-  echo "Key is base64 encoded, decoding..."
-  if ! echo "$vsi_ssh" | tr -d '[:space:]' | base64 -d > "$KEY_FILE" 2>/dev/null; then
-    echo "ERROR: Failed to decode base64 SSH key"
-    exit 1
-  fi
-fi
-
+# Write the key directly - it's already in raw format
+echo "$vsi_ssh" > "$KEY_FILE"
 chmod 600 "$KEY_FILE"
 
 # Verify the key looks valid
-if ! grep -q "BEGIN.*PRIVATE KEY" "$KEY_FILE"; then
-  echo "ERROR: Decoded key doesn't look like a valid SSH private key"
-  head -n 2 "$KEY_FILE"
+if grep -q "BEGIN.*PRIVATE KEY" "$KEY_FILE"; then
+  echo "SSH key installed successfully"
+else
+  echo "ERROR: Key doesn't look like a valid SSH private key"
+  echo "First line: $(head -n 1 "$KEY_FILE")"
   exit 1
 fi
-
-echo "SSH key installed successfully"
 
 # --------------------------------------------------
 # SSH to VSI
