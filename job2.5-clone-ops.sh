@@ -21,6 +21,7 @@ IBMI_HOST="192.168.0.109"
 
 # ===========================================================
 # SSH keys from env vars → temp files
+# (names EXACTLY as defined in Code Engine)
 # ===========================================================
 VSI_KEY_FILE="$(mktemp)"
 IBMI_KEY_FILE="$(mktemp)"
@@ -30,8 +31,8 @@ cleanup() {
 }
 trap cleanup EXIT
 
-echo "$VSI_SSH_KEY"  > "$VSI_KEY_FILE"
-echo "$IBMI_SSH_KEY" > "$IBMI_KEY_FILE"
+echo "$vsi_ssh"  > "$VSI_KEY_FILE"
+echo "$ibmi_ssh" > "$IBMI_KEY_FILE"
 
 chmod 600 "$VSI_KEY_FILE" "$IBMI_KEY_FILE"
 
@@ -69,9 +70,8 @@ echo "✓ PowerVS workspace targeted"
 # ===========================================================
 echo "→ Running IBM i PASE command..."
 
-if [[ -n "${IBMI_PW:-}" ]]; then
-  # Password-capable path
-  sshpass -p "$IBMI_PW" ssh \
+if [[ -n "${ibmi_pw:-}" ]]; then
+  sshpass -p "$ibmi_pw" ssh \
     "${SSH_OPTS[@]}" \
     -o PreferredAuthentications=publickey,password \
     -o PubkeyAuthentication=yes \
@@ -82,7 +82,6 @@ if [[ -n "${IBMI_PW:-}" ]]; then
     "${IBMI_USER}@${IBMI_HOST}" \
     'system "CALL PGM(QSYS/QAENGCHG) PARM(*ENABLECI)"'
 else
-  # Key-only path
   ssh \
     "${SSH_OPTS[@]}" \
     -o BatchMode=yes \
