@@ -3,32 +3,48 @@ set -euo pipefail
 
 echo "=== START JOB ==="
 
-### 1. Prepare SSH directory
-mkdir -p /root/.ssh
-chmod 700 /root/.ssh
+# --------------------------------------------------
+# IBM Cloud authentication
+# --------------------------------------------------
+API_KEY="${IBMCLOUD_API_KEY}"
+REGION="us-south"
+RESOURCE_GROUP="Default"
 
-### 2. Write SSH key from env var to file (NO ECHO)
-KEY_FILE="/root/.ssh/id_ed25519"
+PVS_CRN="crn:v1:bluemix:public:power-iaas:dal10:a/db1a8b544a184fd7ac339c243684a9b7:973f4d55-9056-4848-8ed0-4592093161d2::"
 
-if [[ -z "${vsi_ssh:-}" ]]; then
-  echo "ERROR: vsi_ssh environment variable is not set"
-  exit 1
-fi
+echo "Logging into IBM Cloud..."
+ibmcloud login --apikey "$API_KEY" -r "$REGION" >/dev/null
+echo "IBM Cloud login OK"
 
-printf '%s\n' "$vsi_ssh" > "$KEY_FILE"
+echo "Targeting resource group..."
+ibmcloud target -g "$RESOURCE_GROUP" >/dev/null
+echo "Resource group targeted"
+
+echo "Targeting PowerVS workspace..."
+ibmcloud pi workspace target "$PVS_CRN" >/dev/null
+echo "PowerVS workspace targeted"
+
+# --------------------------------------------------
+# Install SSH key from Code Engine secret
+# --------------------------------------------------
+KEY_FILE="$(mktemp)"
 chmod 600 "$KEY_FILE"
 
-### 3. Sanity check (safe)
-ssh-keygen -l -f "$KEY_FILE" >/dev/null
+# 'vsi_ssh' is injected by Code Engine:
+# vsi_ssh -> vsi-ssh.id_rsa
+printf '%s\n' "$vsi_ssh" > "$KEY_FILE"
 
 echo "SSH key installed correctly"
 
-### 4. SSH to VSI
+# --------------------------------------------------
+# SSH to VSI
+# --------------------------------------------------
 ssh \
-  -o StrictHostKeyChecking=no \
   -i "$KEY_FILE" \
+  -o StrictHostKeyChecking=no \
+  -o UserKnownHostsFile=/dev/null \
   murphy@52.118.255.179 \
-  "echo 'Connected to VSI OK'"
+  "echo 'Logged into VSI successfully'"
 
-echo "=== JOB COMPLETE ==="
+echo "=== END JOB ==="
 
