@@ -28,24 +28,19 @@ KEY_FILE="$HOME/.ssh/id_rsa"
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
 
-# Validate the secret exists
-if [ -z "${vsi_ssh:-}" ]; then
-  echo "ERROR: vsi_ssh environment variable is not set"
+if [ -z "${id_rsa:-}" ]; then
+  echo "ERROR: id_rsa environment variable is not set"
   exit 1
 fi
 
 echo "Installing SSH key..."
-
-# Write the key directly - it's already in raw format
-echo "$vsi_ssh" > "$KEY_FILE"
+echo "$id_rsa" > "$KEY_FILE"
 chmod 600 "$KEY_FILE"
 
-# Verify the key looks valid
 if grep -q "BEGIN.*PRIVATE KEY" "$KEY_FILE"; then
   echo "SSH key installed successfully"
 else
   echo "ERROR: Key doesn't look like a valid SSH private key"
-  echo "First line: $(head -n 1 "$KEY_FILE")"
   exit 1
 fi
 
