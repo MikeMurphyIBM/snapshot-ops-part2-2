@@ -27,14 +27,14 @@ echo "PowerVS workspace targeted"
 # --------------------------------------------------
 # Install SSH key from Code Engine secret
 # --------------------------------------------------
-KEY_FILE="$(mktemp)"
-chmod 600 "$KEY_FILE"
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
 
-# 'vsi_ssh' is injected by Code Engine:
-# vsi_ssh -> vsi-ssh.id_rsa
-printf '%s\n' "$vsi_ssh" > "$KEY_FILE"
+printf "%s\n" "$vsi_ssh" > ~/.ssh/id_rsa
+chmod 600 ~/.ssh/id_rsa
 
 echo "SSH key installed correctly"
+
 
 # --------------------------------------------------
 # SSH to VSI
