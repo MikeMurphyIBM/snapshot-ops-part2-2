@@ -22,37 +22,56 @@ ibmcloud pi workspace target "$PVS_CRN" >/dev/null
 echo "PowerVS workspace targeted"
 
 # --------------------------------------------------
-# Install SSH key from Code Engine secret
+# Install SSH keys from Code Engine secrets
 # --------------------------------------------------
-KEY_FILE="$HOME/.ssh/id_rsa"
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
 
+# VSI SSH Key (RSA)
+VSI_KEY_FILE="$HOME/.ssh/id_rsa"
 if [ -z "${id_rsa:-}" ]; then
   echo "ERROR: id_rsa environment variable is not set"
   exit 1
 fi
+echo "$id_rsa" > "$VSI_KEY_FILE"
+chmod 600 "$VSI_KEY_FILE"
+echo "VSI SSH key installed"
 
-echo "Installing SSH key..."
-echo "$id_rsa" > "$KEY_FILE"
-chmod 600 "$KEY_FILE"
-
-if grep -q "BEGIN.*PRIVATE KEY" "$KEY_FILE"; then
-  echo "SSH key installed successfully"
-else
-  echo "ERROR: Key doesn't look like a valid SSH private key"
+# IBMi SSH Key (ED25519)
+IBMI_KEY_FILE="$HOME/.ssh/id_ed25519_vsi"
+if [ -z "${id_ed25519_vsi:-}" ]; then
+  echo "ERROR: id_ed25519_vsi environment variable is not set"
   exit 1
 fi
+echo "$id_ed25519_vsi" > "$IBMI_KEY_FILE"
+chmod 600 "$IBMI_KEY_FILE"
+echo "IBMi SSH key installed"
 
 # --------------------------------------------------
-# SSH to VSI
+# SSH to VSI, then to IBMi, run command
 # --------------------------------------------------
-echo "Connecting to VSI..."
-ssh \
-  -i "$KEY_FILE" \
+echo "Connecting to VSI and then to IBMi..."
+
+ssh -i "$VSI_KEY_FILE" \
   -o StrictHostKeyChecking=no \
   -o UserKnownHostsFile=/dev/null \
   murphy@52.118.255.179 \
-  "echo 'Logged into VSI successfully'"
+  "ssh -i /home/murphy/.ssh/id_ed25519_vsi \
+       -o StrictHostKeyChecking=no \
+       -o UserKnownHostsFile=/dev/null \
+       murphy@192.168.0.109 \
+       'system \"CALL PGM(QSYS/QAENGCHG) PARM(*ENABLECI)\"'"
 
+echo "IBMi command executed successfully"
+echo "Waiting 5 seconds before volume clone..."
+sleep 5
+
+# --------------------------------------------------
+# Create volume clone in PowerVS
+# --------------------------------------------------
+echo "Creating volume clone..."
+ibmcloud pi volume clone-async create wth \
+  --volumes 9bc46eab-4b91-41de-beb8-5b677c7530a2,2f20f93c-c48c-4ab0-aa1d-6f5adac8d971
+
+echo "Volume clone initiated"
 echo "=== END JOB ==="
